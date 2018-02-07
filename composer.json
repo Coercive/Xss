@@ -3,7 +3,11 @@
     "type": "library",
     "description": "Coercive Security Router",
     "homepage": "http://coercive.fr",
-    "license": "GNU",
+    "license": "MIT",
+    "licenses": [{
+      "type": "MIT",
+      "url": "https://github.com/Coercive/Xss/blob/master/LICENSE.txt"
+    }],
     "authors": [
         {
             "name": "Anthony Moral",
