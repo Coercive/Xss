@@ -5,119 +5,170 @@ namespace Coercive\Security\Xss;
  * XSS URL
  *
  * @package		Coercive\Security\Xss
- * @link		@link https://github.com/Coercive/Xss
+ * @link		https://github.com/Coercive/Xss
  *
  * @author  	Anthony Moral <contact@coercive.fr>
- * @copyright   (c) 2017 - 2018 Anthony Moral
- * @license 	http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
+ * @copyright   2019 Anthony Moral
+ * @license 	MIT
  */
-class XssUrl {
+class XssUrl
+{
+	# <
+	const LESS_THAN = [
+		"<",
+		"&lt",
+		"%0*3C",
+		"%0*25",
+		"%0*253C",
+		"&#0*60",
+		"&#x0*3c",
+	];
 
-    # <
-    const LEFT = [
-        "<",
-        "&lt;",
-        "%3C",
-        "%25",
-        "%253C",
-        "&#060",
-    ];
+	# >
+	const GREATHER_THAN = [
+		">",
+		"&gt",
+		"%0*3E",
+		"%0*25",
+		"%0*253E",
+		"&#0*62",
+		"&#x0*3e",
+	];
 
-    # >
-    const RIGHT = [
-        ">",
-        "&gt;",
-        "%3E",
-        "%25",
-        "%253E",
-        "&#062",
-    ];
+	# '
+	const QUOTE = [
+		"'",
+		"&apos",
+		"%0*27",
+		"&#0*39",
+		"&#x0*27",
+	];
 
-    # '
-    const QUOTE = [
-        "'",
-        "&apos;",
-        "%27",
-        "&#39",
-        "&#039",
-    ];
+	# "
+	const DBLQUOTE = [
+		'"',
+		"&quot",
+		"%0*22",
+		"&#0*34",
+		"&#x0*22",
+	];
 
-    # "
-    const DBLQUOTE = [
-        '"',
-        "&quot;",
-        "%22",
-        "&#34;",
-        "&#034;",
-    ];
+	# (
+	const LEFT_BRACKET = [
+		'\(',
+		"&#0*40",
+		"&#x0*28",
+	];
 
-    /** @var string */
-    private $_sString = '';
+	# )
+	const RIGHT_BRACKET = [
+		'\)',
+		"&#0*41",
+		"&#x0*29",
+	];
 
-    /** @var array */
-    private $_XssList = [];
+	# ;
+	const SEMICOLON = [
+		'\;',
+		"&#0*59",
+		"&#x0*3b",
+	];
 
-    /** @var bool */
-    private $_bXss = false;
+	/** @var string Given url */
+	private $string = '';
 
-    /**
-     * DETECT XSS URL ATTACK
-     */
-    private function _detect() {
+	/** @var string|null Filtered url */
+	private $filtered = null;
 
-        # Init
-        $this->_bXss = false;
+	/** @var array Blacklist merged items */
+	private $list = [];
 
-        # No data
-        if(!$this->_sString) { return; }
+	/** @var bool Is Xss detected */
+	private $xss = false;
 
-        # Detect
-        foreach ($this->_XssList as $sItem) {
-            if(strpos($this->_sString, $sItem) !== false) {
-                $this->_bXss = true;
-            }
-        }
+	/**
+	 * DETECT XSS URL ATTACK
+	 *
+	 * @return void
+	 */
+	private function detect()
+	{
+		# Init
+		$this->xss = false;
 
-    }
+		# No data
+		if(!$this->string) { return; }
 
-    /**
-     * Xss constructor.
-     * @param string $sString
-     */
-    public function __construct($sString = '') {
-        $this->_XssList = array_merge(self::LEFT, self::RIGHT, self::QUOTE, self::DBLQUOTE);
-        $this->setUrl($sString);
-    }
+		# Detect
+		foreach ($this->list as $item) {
+			if(preg_match("`$item`i", $this->string)) {
 
-    /**
-     * @param string $sString
-     * @return $this
-     */
-    public function setUrl($sString) {
-        $this->_sString = (string) $sString;
-        $this->_detect();
-        return $this;
-    }
+				error_log(print_r($item, true));
+				$this->xss = true;
+			}
+		}
+	}
 
-    /**
-     * @return string
-     */
-    public function getFiltered() {
-        return htmlspecialchars($this->_sString, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-    }
+	/**
+	 * Xss constructor.
+	 *
+	 * @param string $string
+	 * @return void
+	 */
+	public function __construct(string $string = '')
+	{
+		$this->list = array_merge(
+			self::LESS_THAN,
+			self::GREATHER_THAN,
+			self::QUOTE,
+			self::DBLQUOTE,
+			self::LEFT_BRACKET,
+			self::RIGHT_BRACKET,
+			self::SEMICOLON
+		);
+		$this->setUrl($string);
+	}
 
-    /**
-     * @return string
-     */
-    public function getOriginal() {
-        return $this->_sString;
-    }
+	/**
+	 * @param string $string
+	 * @return $this
+	 */
+	public function setUrl(string $string): XssUrl
+	{
+		$this->string = $string;
+		$this->detect();
+		return $this;
+	}
 
-    /**
-     * @return bool
-     */
-    public function isXss() {
-        return $this->_bXss;
-    }
+	/**
+	 * @return string
+	 */
+	public function getFiltered(): string
+	{
+		# Single filtering
+		if(null !== $this->filtered) { return $this->filtered; }
 
+		# Clear
+		$this->filtered = $this->string;
+		foreach ($this->list as $item) {
+			$this->filtered = preg_replace("`$item`i", '', $this->filtered);
+		}
+		return $this->filtered;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getOriginal(): string
+	{
+		return $this->string;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isXss(): bool
+	{
+		return $this->xss;
+	}
 }
