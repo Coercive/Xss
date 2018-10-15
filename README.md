@@ -15,16 +15,31 @@ Load
 use Coercive\Security\Xss;
 
 # Test URL
-$sUrl = "https://mywebsite.com/?var='%22><script>alert();</script>";
+$url = "https://mywebsite.com/?var='%22><script>alert();</script>";
 
 # Load with construct param
-$oXss = new XssUrl($sUrl);
+$xss = new XssUrl($url);
 
 # Or use setUrl on an alredy loaded instance
-$oXss = new XssUrl;
-$oXss->setUrl($sUrl);
+$xss = new XssUrl;
+$xss->setUrl($url);
 
 # Detect
-if($oXss->isXss()) { die; }
+if($xss->isXss()) { die; }
 
+```
+
+New detection optimisation
+--------------------------
+```
+# Test encoded url with script => alert('XSS')
+$url = "&#x6A&#x61&#x76&#x61&#x73&#x63&#x72&#x69&#x70&#x74&#x3A&#x61&#x6C&#x65&#x72&#x74&#x28&#x27&#x58&#x53&#x53&#x0027&#x29";
+
+# Load with construct param
+$xss = new XssUrl($url);
+
+# Show example
+echo '<a href="'.$url.'">BEFORE<a>';
+echo '<br />';
+echo '<a href="'.$xss->getFiltered().'">AFTER<a>';
 ```
