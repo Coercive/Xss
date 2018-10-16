@@ -102,8 +102,6 @@ class XssUrl
 		# Detect
 		foreach ($this->list as $item) {
 			if(preg_match("`$item`i", $this->string)) {
-
-				error_log(print_r($item, true));
 				$this->xss = true;
 			}
 		}
