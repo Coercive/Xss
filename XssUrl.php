@@ -134,6 +134,7 @@ class XssUrl
 	public function setUrl(string $string): XssUrl
 	{
 		$this->string = $string;
+		$this->filtered = null;
 		$this->detect();
 		return $this;
 	}
