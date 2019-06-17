@@ -157,7 +157,6 @@ class XssUrl
 	 */
 	public function setUrl(string $url = ''): XssUrl
 	{
-		$this->filtered = null;
 		$this->url = $url;
 		$this->detect();
 		return $this;
@@ -172,11 +171,9 @@ class XssUrl
 	 */
 	public function getFiltered(string $replacement = ''): string
 	{
-		if(null === $this->filtered) {
-			$this->filtered = $this->url;
-			foreach ($this->list as $item) {
-				$this->filtered = preg_replace("`$item`i", $replacement, $this->filtered);
-			}
+		$this->filtered = $this->url;
+		foreach ($this->list as $item) {
+			$this->filtered = preg_replace("`$item`i", $replacement, $this->filtered);
 		}
 		return $this->filtered;
 	}
