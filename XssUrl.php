@@ -89,9 +89,9 @@ class XssUrl
 	/**
 	 * Detect xss url attack
 	 *
-	 * @return void
+	 * @return XssUrl
 	 */
-	private function detect()
+	private function detect(): XssUrl
 	{
 		$this->xss = false;
 		if($this->url) {
@@ -101,15 +101,15 @@ class XssUrl
 				}
 			}
 		}
+		return $this;
 	}
 
 	/**
 	 * Xss constructor.
 	 *
-	 * @param string $url [optional]
 	 * @return void
 	 */
-	public function __construct(string $url = '')
+	public function __construct()
 	{
 		$this->list = array_merge(
 			self::LESS_THAN,
@@ -120,9 +120,6 @@ class XssUrl
 			self::RIGHT_BRACKET,
 			self::SEMICOLON
 		);
-		if($url) {
-			$this->setUrl($url);
-		}
 	}
 
 	/**
