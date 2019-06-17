@@ -75,7 +75,7 @@ class XssUrl
 	];
 
 	/** @var string Given url */
-	private $string = '';
+	private $url = '';
 
 	/** @var string|null Filtered url */
 	private $filtered = null;
@@ -87,22 +87,18 @@ class XssUrl
 	private $xss = false;
 
 	/**
-	 * DETECT XSS URL ATTACK
+	 * Detect xss url attack
 	 *
 	 * @return void
 	 */
 	private function detect()
 	{
-		# Init
 		$this->xss = false;
-
-		# No data
-		if(!$this->string) { return; }
-
-		# Detect
-		foreach ($this->list as $item) {
-			if(preg_match("`$item`i", $this->string)) {
-				$this->xss = true;
+		if($this->url) {
+			foreach ($this->list as $item) {
+				if(preg_match("`$item`i", $this->url)) {
+					$this->xss = true;
+				}
 			}
 		}
 	}
@@ -110,10 +106,10 @@ class XssUrl
 	/**
 	 * Xss constructor.
 	 *
-	 * @param string $string
+	 * @param string $url [optional]
 	 * @return void
 	 */
-	public function __construct(string $string = '')
+	public function __construct(string $url = '')
 	{
 		$this->list = array_merge(
 			self::LESS_THAN,
@@ -124,33 +120,63 @@ class XssUrl
 			self::RIGHT_BRACKET,
 			self::SEMICOLON
 		);
-		$this->setUrl($string);
+		if($url) {
+			$this->setUrl($url);
+		}
 	}
 
 	/**
-	 * @param string $string
+	 * Include custom characters in detection list
+	 *
+	 * @param array $characters
+	 * @return XssUrl
+	 */
+	public function include(array $characters): XssUrl
+	{
+		$this->list = array_merge($this->list, $characters);
+		return $this;
+	}
+
+	/**
+	 * Exclude custom characters from detection list
+	 *
+	 * @param array $characters
+	 * @return XssUrl
+	 */
+	public function exclude(array $characters): XssUrl
+	{
+		$this->list = array_diff($this->list, $characters);
+		return $this;
+	}
+
+	/**
+	 * Set url for xss detection
+	 *
+	 * @param string $string [optional]
 	 * @return $this
 	 */
-	public function setUrl(string $string): XssUrl
+	public function setUrl(string $url = ''): XssUrl
 	{
-		$this->string = $string;
 		$this->filtered = null;
+		$this->url = $url;
 		$this->detect();
 		return $this;
 	}
 
 	/**
+	 * Get the filtered url
+	 * (remove unallowed characters)
+	 *
+	 * @param string $replacement [optional]
 	 * @return string
 	 */
-	public function getFiltered(): string
+	public function getFiltered(string $replacement = ''): string
 	{
-		# Single filtering
-		if(null !== $this->filtered) { return $this->filtered; }
-
-		# Clear
-		$this->filtered = $this->string;
-		foreach ($this->list as $item) {
-			$this->filtered = preg_replace("`$item`i", '', $this->filtered);
+		if(null === $this->filtered) {
+			$this->filtered = $this->url;
+			foreach ($this->list as $item) {
+				$this->filtered = preg_replace("`$item`i", $replacement, $this->filtered);
+			}
 		}
 		return $this->filtered;
 	}
@@ -158,9 +184,9 @@ class XssUrl
 	/**
 	 * @return string
 	 */
-	public function getOriginal(): string
+	public function getSource(): string
 	{
-		return $this->string;
+		return $this->url;
 	}
 
 	/**
