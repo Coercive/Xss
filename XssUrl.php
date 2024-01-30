@@ -56,6 +56,7 @@ class XssUrl
 	# (
 	const LEFT_BRACKET = [
 		'\(',
+		"%0*28",
 		"&#0*40",
 		"&#x0*28",
 	];
@@ -63,6 +64,7 @@ class XssUrl
 	# )
 	const RIGHT_BRACKET = [
 		'\)',
+		"%0*29",
 		"&#0*41",
 		"&#x0*29",
 	];
