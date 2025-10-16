@@ -4,12 +4,12 @@ namespace Coercive\Security\Xss;
 /**
  * XSS URL
  *
- * @package		Coercive\Security\Xss
- * @link		https://github.com/Coercive/Xss
+ * @package oercive\Security\Xss
+ * @link https://github.com/Coercive/Xss
  *
- * @author  	Anthony Moral <contact@coercive.fr>
- * @copyright   2019 Anthony Moral
- * @license 	MIT
+ * @author Anthony Moral <contact@coercive.fr>
+ * @copyright 2025 Anthony Moral
+ * @license MIT
  */
 class XssUrl
 {
@@ -77,23 +77,20 @@ class XssUrl
 	];
 
 	/** @var string Given url */
-	private $url = '';
-
-	/** @var string|null Filtered url */
-	private $filtered = null;
+	private string $url = '';
 
 	/** @var array Blacklist merged items */
-	private $list = [];
+	private array $list;
 
 	/** @var bool Is Xss detected */
-	private $xss = false;
+	private bool $xss = false;
 
 	/**
 	 * Detect xss url attack
 	 *
-	 * @return XssUrl
+	 * @return void
 	 */
-	private function detect(): XssUrl
+	private function detect(): void
 	{
 		$this->xss = false;
 		if($this->url) {
@@ -103,7 +100,6 @@ class XssUrl
 				}
 			}
 		}
-		return $this;
 	}
 
 	/**
@@ -151,7 +147,7 @@ class XssUrl
 	/**
 	 * Set url for xss detection
 	 *
-	 * @param string $string [optional]
+	 * @param string $url [optional]
 	 * @return $this
 	 */
 	public function setUrl(string $url = ''): XssUrl
@@ -170,11 +166,11 @@ class XssUrl
 	 */
 	public function getFiltered(string $replacement = ''): string
 	{
-		$this->filtered = $this->url;
+		$filtered = $this->url;
 		foreach ($this->list as $item) {
-			$this->filtered = preg_replace("`$item`i", $replacement, $this->filtered);
+			$filtered = preg_replace("`$item`i", $replacement, $filtered);
 		}
-		return $this->filtered;
+		return $filtered;
 	}
 
 	/**
